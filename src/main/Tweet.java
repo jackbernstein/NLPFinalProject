@@ -34,6 +34,18 @@ public class Tweet {
     return "This is a " + rating + " tweet about " + airline + ", and the tweet is: " + tweet;
   }
 
+  public String getTweet() {
+    return tweet;
+  }
+
+  public Rating getRating() {
+    return rating;
+  }
+
+  public Airline getAirline() {
+    return airline;
+  }
+
 
 
 }

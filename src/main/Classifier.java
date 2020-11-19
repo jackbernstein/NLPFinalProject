@@ -42,30 +42,30 @@ public class Classifier {
 
 
 
-		// this.lambda = Double.parseDouble(smooth);
-		// posCounts = new HashMap<String, Double>();
-		// negCounts = new HashMap<String, Double>();
-		// vocab = new HashSet<String>();
-		//
-		// // sort training data to train the model
-		// trainModel(training);
-		// probPos = Math.log10(numPos/(numPos + numNeg));
-		// probNeg = Math.log10(numNeg/(numPos + numNeg));
-		//
-		//
-		// testModel(testing);
+		this.lambda = Double.parseDouble(smooth);
+		posCounts = new HashMap<String, Double>();
+		negCounts = new HashMap<String, Double>();
+		vocab = new HashSet<String>();
+
+		// sort training data to train the model
+		trainModel(training);
+		probPos = Math.log10(numPos/(numPos + numNeg));
+		probNeg = Math.log10(numNeg/(numPos + numNeg));
+
+
+		testModel(testing);
 
 		//NOTE: this is commented out so that the text does not get printed for every run
 		// if uncommented, this will print out the probabilities and top 10 most predictive features
 
-//		calculateProbabilities();
-//		for(Map.Entry<String, Double> entry : posProbs.entrySet()) {
-//			System.out.println("p(" + entry.getKey() + "|positive) = " + entry.getValue().toString());
-//		}
-//		for(Map.Entry<String, Double> entry : negProbs.entrySet()) {
-//			System.out.println("p(" + entry.getKey() + "|negative) = " + entry.getValue().toString());
-//		}
-//		getTopTen();
+		calculateProbabilities();
+		for(Map.Entry<String, Double> entry : posProbs.entrySet()) {
+			System.out.println("p(" + entry.getKey() + "|positive) = " + entry.getValue().toString());
+		}
+		for(Map.Entry<String, Double> entry : negProbs.entrySet()) {
+			System.out.println("p(" + entry.getKey() + "|negative) = " + entry.getValue().toString());
+		}
+		getTopTen();
 	}
 
 	/**
@@ -105,35 +105,35 @@ public class Classifier {
 	 */
 	public void getCounts(String training) {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(training)));
-			String line = br.readLine();
-			while(line != null) {
-				String[] words = line.split("\\s");
-				if(isPositive(words[0])) {
-					numPos++;
-				} else {
-					numNeg++;
-				}
+			//BufferedReader br = new BufferedReader(new FileReader(new File(training)));
+			//String line = br.readLine();
 
-				// add counts for each sentence
-				for(int i = 1; i < words.length; i++) {
-					String wrd = words[i];
-					vocab.add(wrd);
-					if(isPositive(words[0])) {
-						posCounts.putIfAbsent(wrd, 0.0);
-						Double count = posCounts.get(wrd) + 1;
-						posCounts.put(wrd, count);
-						numWordsPos++;
+			for(Tweet tweet : tweets) {
+					String line = tweet.getTweet();
+					String[] words = line.split("\\s");
+					if(tweet.getRating().equals(Rating.POSITIVE)) {
+						numPos++;
 					} else {
-						negCounts.putIfAbsent(wrd, 0.0);
-						Double count = negCounts.get(wrd) + 1;
-						negCounts.put(wrd, count);
-						numWordsNeg++;
+						numNeg++;
+					}
+
+					// add counts for each sentence
+					for(int i = 1; i < words.length; i++) {
+						String wrd = words[i];
+						vocab.add(wrd);
+						if(tweet.getRating().equals(Rating.POSITIVE)) {
+							posCounts.putIfAbsent(wrd, 0.0);
+							Double count = posCounts.get(wrd) + 1;
+							posCounts.put(wrd, count);
+							numWordsPos++;
+						} else {
+							negCounts.putIfAbsent(wrd, 0.0);
+							Double count = negCounts.get(wrd) + 1;
+							negCounts.put(wrd, count);
+							numWordsNeg++;
+						}
 					}
 				}
-				line = br.readLine();
-			}
-			br.close();
 		} catch(Exception e) {
 			System.out.println("Error: unable to read training file");
 			e.printStackTrace();
