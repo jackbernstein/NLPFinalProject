@@ -5,6 +5,5 @@ public enum Airline {
   UNITED,
   SOUTHWEST,
   DELTA,
-  US,
-  AMERICAN
+  US
 }

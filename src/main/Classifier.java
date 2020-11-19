@@ -321,8 +321,8 @@ public class Classifier {
 				return Airline.DELTA;
 			case "US Airways":
 				return Airline.US;
-			case "American":
-				return Airline.AMERICAN;
+			// case "American":
+			// 	return Airline.AMERICAN;
 			default:
 				return null;
 		}
