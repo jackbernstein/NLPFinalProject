@@ -1,7 +1,11 @@
+package main;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +13,7 @@ import java.util.Map;
 
 /**
  * Classifier class that creates a multinomial classifier
- * 
+ *
  * @author Renae Tamura, Linnea Dahmen, Jack Bernstein
  *
  */
@@ -18,6 +22,7 @@ public class Classifier {
 	public HashMap<String, Double> posCounts, negCounts;
 	public HashMap<String, Double> posProbs, negProbs;
 	public HashSet<String> vocab;
+	public ArrayList<Tweet> tweets = new ArrayList<Tweet>();
 
 	public Double numPos = 0.0, numNeg = 0.0;
 	public Double numWordsPos = 0.0, numWordsNeg = 0.0;
@@ -32,26 +37,27 @@ public class Classifier {
 	 * @param testing
 	 * @param smooth
 	 */
-	public Classifier(String training, String testing, String smooth) {
-		this.lambda = Double.parseDouble(smooth);
-		posCounts = new HashMap<String, Double>();
-		negCounts = new HashMap<String, Double>();
-		vocab = new HashSet<String>();
+	public Classifier(String training, String testing, String smooth) throws Exception {
+		readDataCsv(training);
 
-		// sort training data to train the model
-		trainModel(training);
-		probPos = Math.log10(numPos/(numPos + numNeg));
-		probNeg = Math.log10(numNeg/(numPos + numNeg));
-		
-		//System.out.println("p(positive) = " + probPos);
-		//System.out.println("p(negative) = " + probNeg);
 
-		// sort testing data to test the model
-		testModel(testing);
-		
+
+		// this.lambda = Double.parseDouble(smooth);
+		// posCounts = new HashMap<String, Double>();
+		// negCounts = new HashMap<String, Double>();
+		// vocab = new HashSet<String>();
+		//
+		// // sort training data to train the model
+		// trainModel(training);
+		// probPos = Math.log10(numPos/(numPos + numNeg));
+		// probNeg = Math.log10(numNeg/(numPos + numNeg));
+		//
+		//
+		// testModel(testing);
+
 		//NOTE: this is commented out so that the text does not get printed for every run
 		// if uncommented, this will print out the probabilities and top 10 most predictive features
-		
+
 //		calculateProbabilities();
 //		for(Map.Entry<String, Double> entry : posProbs.entrySet()) {
 //			System.out.println("p(" + entry.getKey() + "|positive) = " + entry.getValue().toString());
@@ -70,6 +76,25 @@ public class Classifier {
 	 */
 	public void trainModel(String training) {
 		getCounts(training);
+	}
+
+	public void readDataCsv(String csv) throws Exception {
+		List<List<String>> records = new ArrayList<>();
+		try (BufferedReader br = new BufferedReader(new FileReader(csv))) {
+	    String line;
+	    while ((line = br.readLine()) != null) {
+	        String[] values = line.split(",");
+					if(values.length < 3)
+						continue;
+					Rating rate = getRating(values[0]);
+					Airline air = getAirline(values[1]);
+					String msg = getTweet(values);
+					if(rate == null | air == null)
+						continue;
+					Tweet tweet = new Tweet(rate, air, msg);
+					tweets.add(tweet);
+	    }
+		}
 	}
 
 	/**
@@ -117,8 +142,8 @@ public class Classifier {
 
 	/**
 	 * method to test the model with the given data
-	 * takes a string for the testing data 
-	 * 
+	 * takes a string for the testing data
+	 *
 	 * @param testing
 	 */
 	public void testModel(String testing) {
@@ -141,11 +166,11 @@ public class Classifier {
 	}
 
 	/**
-	 * classify method that takes a sentence and classifies as either 
-	 * negative or positive 
-	 * 
+	 * classify method that takes a sentence and classifies as either
+	 * negative or positive
+	 *
 	 * @param sentence
-	 * @return classification 
+	 * @return classification
 	 */
 	public String classify(String sentence) {
 		String[] words = sentence.split("\\s");
@@ -164,7 +189,7 @@ public class Classifier {
 	/**
 	 * get positive probability for the sentence
 	 * takes an array of Strings that represent the words
-	 * 
+	 *
 	 * @param words
 	 * @return positive probability
 	 */
@@ -179,9 +204,9 @@ public class Classifier {
 	}
 
 	/**
-	 * get negative probability for the sentence 
+	 * get negative probability for the sentence
 	 * takes an array of Strings that represent the words
-	 * 
+	 *
 	 * @param words
 	 * @return negative probability
 	 */
@@ -198,7 +223,7 @@ public class Classifier {
 	/**
 	 * calculate log probabilities
 	 * takes a word and a boolean and returns the proper log probability
-	 * 
+	 *
 	 * @param word
 	 * @param isPos
 	 * @return log probability
@@ -224,19 +249,19 @@ public class Classifier {
 	}
 
 	/**
-	 * method to determine if the sentence is classified as positive or negative 
-	 * 
+	 * method to determine if the sentence is classified as positive or negative
+	 *
 	 * @param rating
 	 * @return positive boolean
 	 */
 	public Boolean isPositive(String rating) {
 		return rating.equals("positive");
 	}
-	
+
 	/**
 	 * calculate probabilities method
 	 * used to calculate probabilities to be printed out for the assignment
-	 * 
+	 *
 	 * NOTE: this is not actually used in our regular calculations
 	 */
 	public void calculateProbabilities() {
@@ -247,18 +272,18 @@ public class Classifier {
 			Double val = calculateLogProb(wrd, true);
 			posProbs.put(wrd, val);
 		}
-		
+
 		for(Map.Entry<String, Double> entry : negCounts.entrySet()) {
 			String wrd = entry.getKey();
 			Double val = calculateLogProb(wrd, false);
 			negProbs.put(wrd, val);
 		}
 	}
-	
+
 	/**
 	 * get top ten method
 	 * used to get the top ten most predictive features for positive and negative
-	 * 
+	 *
 	 * NOTE: this is not actually used in our regular calculations
 	 */
 	public void getTopTen() {
@@ -270,9 +295,9 @@ public class Classifier {
 				pairs.add(pair);
 			}
 		}
-		
+
 		Collections.sort(pairs);
-		
+
 		// prints out the top 10 most predictive features
 		System.out.println("Top 10 most predictive: positive");
 		for(int i = 0; i < 10; i++) {
@@ -283,16 +308,56 @@ public class Classifier {
 			System.out.println(pairs.get(i).toString());
 		}
 	}
-	
-	
+
+	public Airline getAirline(String airline) {
+		switch (airline) {
+			case "Virgin America":
+				return Airline.VIRGIN;
+			case "United":
+				return Airline.UNITED;
+			case "Soutwest":
+				return Airline.SOUTHWEST;
+			case "Delta":
+				return Airline.DELTA;
+			case "US Airways":
+				return Airline.US;
+			case "American":
+				return Airline.AMERICAN;
+			default:
+				return null;
+		}
+	}
+
+	public Rating getRating(String rating) {
+		switch (rating) {
+			case "positive":
+				return Rating.POSITIVE;
+			case "negative":
+				return Rating.NEGATIVE;
+			case "neutral":
+				return Rating.NEUTRAL;
+			default:
+				return null;
+		}
+	}
+
+	public String getTweet(String[] csvLine){
+		String res = "";
+		for(int i = 2; i < csvLine.length; i++){
+			res += csvLine[i];
+		}
+		return res;
+	}
+
+
 	/**
 	 * main method that creates a new classifier
-	 * 
+	 *
 	 * @param args[0] – training data
 	 * @param args[1] – testing data
 	 * @param args[2] – lambda
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		if(args.length != 3) {
 			System.out.println("Error: Incorrect number of parameters");
 		} else {

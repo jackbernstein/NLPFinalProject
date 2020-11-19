@@ -1,8 +1,10 @@
+package main;
+
 
 public class Pair implements Comparable<Pair>{
 	public String word;
 	public Double val;
-	
+
 	public Pair(String word, Double val) {
 		this.word = word;
 		this.val = val;
@@ -11,7 +13,7 @@ public class Pair implements Comparable<Pair>{
     public String getWord() {
       return word;
     }
-    
+
     public Double getVal() {
       return val;
     }
@@ -20,7 +22,7 @@ public class Pair implements Comparable<Pair>{
     public int compareTo(Pair pair) {
       return val.compareTo(pair.getVal());
     }
-    
+
     @Override
     public String toString() {
     	return (word + "	" + val);
